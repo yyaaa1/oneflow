@@ -15,6 +15,9 @@ limitations under the License.
 */
 #include "oneflow/core/framework/framework.h"
 #include "oneflow/user/data/onerec_data_reader.h"
+#include <nvToolsExt.h> 
+#include <sys/syscall.h>
+#include <unistd.h>
 
 namespace oneflow {
 
@@ -46,8 +49,10 @@ class OneRecReaderKernel final : public user_op::OpKernel {
 
  private:
   void Compute(user_op::KernelComputeContext* ctx, user_op::OpKernelState* state) const override {
+    nvtxRangePush("reader");
     auto* reader = dynamic_cast<OneRecReaderWrapper*>(state);
     reader->Read(ctx);
+    nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }
 };

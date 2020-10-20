@@ -17,7 +17,9 @@ limitations under the License.
 #include "oneflow/core/common/balanced_splitter.h"
 #include "oneflow/core/common/tensor_buffer.h"
 #include "oneflow/user/kernels/example_generated.h"
-
+#include <nvToolsExt.h> 
+#include <sys/syscall.h>
+#include <unistd.h>
 namespace oneflow {
 
 namespace {
@@ -245,6 +247,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
 
  private:
   void Compute(user_op::KernelComputeContext* ctx) const override {
+    
     user_op::Tensor* in_blob = ctx->Tensor4ArgNameAndIndex("in", 0);
     user_op::Tensor* out_blob = ctx->Tensor4ArgNameAndIndex("out", 0);
     int64_t record_num = in_blob->shape().At(0);
@@ -252,6 +255,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const TensorBuffer* records = in_blob->dptr<TensorBuffer>();
 
     const std::string key = ctx->Attr<std::string>("key");
+    nvtxRangePush(key.c_str());
     const DataType data_type = ctx->Attr<DataType>("data_type");
     const Shape& static_shape = ctx->Attr<Shape>("static_shape");
     const bool is_dynamic = ctx->Attr<bool>("is_dynamic");
@@ -259,9 +263,9 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const Shape& reshape = ctx->Attr<Shape>("reshape");
     const bool has_batch_padding = ctx->Attr<bool>("has_batch_padding");
     const Shape& batch_padding = ctx->Attr<Shape>("batch_padding");
-
     DecodeField(records, record_num, key, data_type, static_shape, is_dynamic, has_reshape, reshape,
                 has_batch_padding, batch_padding, out_blob);
+    nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }
 };
