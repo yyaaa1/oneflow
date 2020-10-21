@@ -17,6 +17,7 @@ limitations under the License.
 #include "oneflow/core/common/balanced_splitter.h"
 #include "oneflow/core/common/tensor_buffer.h"
 #include "oneflow/user/kernels/example_generated.h"
+#include "oneflow/core/thread/thread_manager.h"
 #include <nvToolsExt.h> 
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -32,12 +33,12 @@ void GetTensorsFromRecords(const TensorBuffer* records, const int64_t record_num
                            const std::string& key,
                            std::vector<const onerec::example::Tensor*>* tensors) {
   tensors->resize(record_num);
-  for (int32_t i = 0; i < record_num; ++i) {
+  MultiThreadLoop(record_num, [&](size_t i) {
     const TensorBuffer* cur_record = records + i;
     const auto buffer = reinterpret_cast<const uint8_t*>(cur_record->data());
 
-    flatbuffers::Verifier verifier(buffer, static_cast<size_t>(cur_record->shape().elem_cnt()));
-    CHECK(onerec::example::VerifyExampleBuffer(verifier));
+    //flatbuffers::Verifier verifier(buffer, static_cast<size_t>(cur_record->shape().elem_cnt()));
+    //CHECK(onerec::example::VerifyExampleBuffer(verifier));
 
     const onerec::example::Example* example = onerec::example::GetExample(buffer);
     const auto* features = example->features();
@@ -47,7 +48,23 @@ void GetTensorsFromRecords(const TensorBuffer* records, const int64_t record_num
     const onerec::example::Tensor* tensor = feature->tensor();
     CHECK_NOTNULL(tensor);
     (*tensors)[i] = tensor;
-  }
+  });
+  //for (int32_t i = 0; i < record_num; ++i) {
+  //  const TensorBuffer* cur_record = records + i;
+  //  const auto buffer = reinterpret_cast<const uint8_t*>(cur_record->data());
+//
+  //  flatbuffers::Verifier verifier(buffer, static_cast<size_t>(cur_record->shape().elem_cnt()));
+  //  CHECK(onerec::example::VerifyExampleBuffer(verifier));
+//
+  //  const onerec::example::Example* example = onerec::example::GetExample(buffer);
+  //  const auto* features = example->features();
+  //  CHECK_NOTNULL(features);
+  //  const onerec::example::Feature* feature = features->LookupByKey(key.c_str());
+  //  CHECK_NOTNULL(feature);
+  //  const onerec::example::Tensor* tensor = feature->tensor();
+  //  CHECK_NOTNULL(tensor);
+  //  (*tensors)[i] = tensor;
+  //}
 }
 
 void GetTensorDimsWithoutReshape(const std::vector<const onerec::example::Tensor*>& tensors,
@@ -172,7 +189,9 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   char* out_ptr = out_blob->mut_dptr<char>();
   const int64_t out_bytes = out_blob->shape().elem_cnt() * sizeof(data_type);
   std::vector<const onerec::example::Tensor*> tensors;
+  double start_time = GetCurTime();
   GetTensorsFromRecords(records, record_num, key, &tensors);
+  LOG(INFO)<<"GetTensorsFromRecords time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
   std::vector<std::vector<int32_t>> tensor_dims;
   if (has_reshape) {
     CHECK_EQ(reshape.NumAxes(), static_shape.NumAxes());
@@ -230,11 +249,14 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   }
   const int64_t buffer_size = GetBatchSizeInBytes(batch_size, instance_shape, data_type);
   // CHECK_LE(buffer_size, out_bytes);
+  start_time = GetCurTime();
   if (has_batch_padding) {
     CopyTensorsToBuffer<true>(tensors, data_type, instance_shape, out_ptr);
   } else {
     CopyTensorsToBuffer<false>(tensors, data_type, instance_shape, out_ptr);
   }
+  LOG(INFO)<<"CopyTensorsToBuffer time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
+
 }
 
 }  // namespace
@@ -255,7 +277,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const TensorBuffer* records = in_blob->dptr<TensorBuffer>();
 
     const std::string key = ctx->Attr<std::string>("key");
-    nvtxRangePush(key.c_str());
+    //nvtxRangePush(key.c_str());
     const DataType data_type = ctx->Attr<DataType>("data_type");
     const Shape& static_shape = ctx->Attr<Shape>("static_shape");
     const bool is_dynamic = ctx->Attr<bool>("is_dynamic");
@@ -265,7 +287,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const Shape& batch_padding = ctx->Attr<Shape>("batch_padding");
     DecodeField(records, record_num, key, data_type, static_shape, is_dynamic, has_reshape, reshape,
                 has_batch_padding, batch_padding, out_blob);
-    nvtxRangePop();
+    //nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }
 };

@@ -49,10 +49,12 @@ class OneRecReaderKernel final : public user_op::OpKernel {
 
  private:
   void Compute(user_op::KernelComputeContext* ctx, user_op::OpKernelState* state) const override {
-    nvtxRangePush("reader");
+    //nvtxRangePush("reader");
+    double start_time = GetCurTime();
     auto* reader = dynamic_cast<OneRecReaderWrapper*>(state);
     reader->Read(ctx);
-    nvtxRangePop();
+    LOG(INFO)<<"OneRecReaderKernel time  "<<(GetCurTime() - start_time)/1e6;
+    //nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }
 };

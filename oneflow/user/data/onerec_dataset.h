@@ -99,6 +99,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
 
  private:
   void ReadSample(TensorBuffer& tensor) {
+    double start_time = GetCurTime();
     static_assert(sizeof(OneRecFrameHeader) == kHeaderSize, "");
     OneRecFrameHeaderView header_view{};
     static_assert(sizeof(header_view.header) == kHeaderSize, "");
@@ -130,19 +131,22 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     static_assert(sizeof(OneRecFrameFooterView) == kDigestFieldSize, "");
     OneRecFrameFooterView footer_view{};
     CHECK_EQ(in_stream_->ReadFully(footer_view.raw, kDigestFieldSize), 0);  // read footer
-    CHECK_NE(XXH64_reset(state, seed), XXH_ERROR);
-    CHECK_NE(LZ4_XXH64_update(state, body, payload_size), XXH_ERROR);
-    CHECK_EQ(ByteSwap(footer_view.digest), LZ4_XXH64_digest(state));
+    //CHECK_NE(XXH64_reset(state, seed), XXH_ERROR);
+    //CHECK_NE(LZ4_XXH64_update(state, body, payload_size), XXH_ERROR);
+    //CHECK_EQ(ByteSwap(footer_view.digest), LZ4_XXH64_digest(state));
     CHECK_NE(LZ4_XXH64_freeState(state), XXH_ERROR);
+    LOG(INFO)<<"ReadSample time  "<<(GetCurTime() - start_time)/1e6;
   }
 
   void ResetInstream() {
+    double start_time = GetCurTime();
     if (shuffle_after_epoch_) {
       std::mt19937 g(kOneflowDatasetSeed + current_epoch_);
       std::shuffle(data_file_paths_.begin(), data_file_paths_.end(), g);
     }
     std::vector<std::string> file_paths = GetLocalFilePaths();
     in_stream_.reset(new PersistentInStream(DataFS(), file_paths, false, false));
+    LOG(INFO)<<"ResetInstream time  "<<(GetCurTime() - start_time)/1e6;
   }
 
   std::vector<std::string> GetLocalFilePaths() {

@@ -34,11 +34,13 @@ class OneRecParser final : public Parser<TensorBuffer> {
   void Parse(std::shared_ptr<LoadTargetPtrList> batch_data,
              user_op::KernelComputeContext* ctx) override {
     user_op::Tensor* out_tensor = ctx->Tensor4ArgNameAndIndex("out", 0);
+    double start_time = GetCurTime();
     FOR_RANGE(int32_t, i, 0, batch_data->size()) {
       TensorBuffer* out = out_tensor->mut_dptr<TensorBuffer>() + i;
       TensorBuffer* tensor = batch_data->at(i).get();
       out->Swap(tensor);
     }
+    LOG(INFO)<<"Parse time  "<<(GetCurTime() - start_time)/1e6;
   }
 };
 
