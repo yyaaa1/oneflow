@@ -31,14 +31,15 @@ class OneRecDataReader final : public DataReader<TensorBuffer> {
   OneRecDataReader(user_op::KernelInitContext* ctx) : DataReader<TensorBuffer>(ctx) {
     loader_.reset(new OneRecDataset(ctx));
     parser_.reset(new OneRecParser());
-    if (ctx->Attr<bool>("random_shuffle")) {
-      loader_.reset(new RandomShuffleDataset<TensorBuffer>(ctx, std::move(loader_)));
-    }
+    //if (ctx->Attr<bool>("random_shuffle")) {
+    //  loader_.reset(new RandomShuffleDataset<TensorBuffer>(ctx, std::move(loader_)));
+    //}
     int32_t batch_size = ctx->TensorDesc4ArgNameAndIndex("out", 0)->shape().elem_cnt();
     loader_.reset(new BatchDataset<TensorBuffer>(batch_size, std::move(loader_)));
     StartLoadThread();
   }
   ~OneRecDataReader() = default;
+
 
  protected:
   using DataReader<TensorBuffer>::loader_;

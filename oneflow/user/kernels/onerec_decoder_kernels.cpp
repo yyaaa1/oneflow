@@ -191,7 +191,7 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   std::vector<const onerec::example::Tensor*> tensors;
   double start_time = GetCurTime();
   GetTensorsFromRecords(records, record_num, key, &tensors);
-  LOG(INFO)<<"GetTensorsFromRecords time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
+  //LOG(INFO)<<"GetTensorsFromRecords time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
   std::vector<std::vector<int32_t>> tensor_dims;
   if (has_reshape) {
     CHECK_EQ(reshape.NumAxes(), static_shape.NumAxes());
@@ -255,7 +255,7 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   } else {
     CopyTensorsToBuffer<false>(tensors, data_type, instance_shape, out_ptr);
   }
-  LOG(INFO)<<"CopyTensorsToBuffer time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
+  //LOG(INFO)<<"CopyTensorsToBuffer time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
 
 }
 
@@ -269,6 +269,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
 
  private:
   void Compute(user_op::KernelComputeContext* ctx) const override {
+    double start_time = GetCurTime();
     
     user_op::Tensor* in_blob = ctx->Tensor4ArgNameAndIndex("in", 0);
     user_op::Tensor* out_blob = ctx->Tensor4ArgNameAndIndex("out", 0);
@@ -287,6 +288,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const Shape& batch_padding = ctx->Attr<Shape>("batch_padding");
     DecodeField(records, record_num, key, data_type, static_shape, is_dynamic, has_reshape, reshape,
                 has_batch_padding, batch_padding, out_blob);
+    LOG(INFO)<<"OneRecDecoderKernel time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
     //nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }

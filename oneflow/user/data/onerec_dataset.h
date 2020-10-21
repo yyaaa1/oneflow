@@ -78,7 +78,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
   OF_DISALLOW_COPY_AND_MOVE(OneRecDataset);
   OneRecDataset(user_op::KernelInitContext* ctx) {
     current_epoch_ = 0;
-    shuffle_after_epoch_ = ctx->Attr<bool>("shuffle_after_epoch");
+    shuffle_after_epoch_ = false;//ctx->Attr<bool>("shuffle_after_epoch");
     data_file_paths_ = ctx->Attr<std::vector<std::string>>("files");
     parallel_id_ = ctx->parallel_ctx().parallel_id();
     parallel_num_ = ctx->parallel_ctx().parallel_num();
@@ -91,8 +91,13 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
 
   LoadTargetPtrList Next() override {
     LoadTargetPtrList ret;
+    if (!template_tensor_) {
+      template_tensor_.reset(new TensorBuffer());
+      ReadSample(*template_tensor_);
+    } 
     LoadTargetPtr sample_ptr(new TensorBuffer());
-    ReadSample(*sample_ptr);
+    // ReadSample(*sample_ptr);
+    sample_ptr->CopyFrom(*template_tensor_);
     ret.push_back(std::move(sample_ptr));
     return ret;
   }
@@ -163,6 +168,8 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
   Range range_;
   std::vector<std::string> data_file_paths_;
   std::unique_ptr<PersistentInStream> in_stream_;
+
+  std::unique_ptr<TensorBuffer> template_tensor_;
 };
 
 }  // namespace data
