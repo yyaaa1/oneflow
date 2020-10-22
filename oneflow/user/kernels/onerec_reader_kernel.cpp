@@ -55,9 +55,9 @@ class OneRecReaderKernel final : public user_op::OpKernel {
   void Compute(user_op::KernelComputeContext* ctx, user_op::OpKernelState* state) const override {
     //nvtxRangePush("reader");
     //LOG(INFO)<<"OneRecReaderKernel start time ";
-    double start_time = GetCurTime();
+    //double start_time = GetCurTime();
     auto* reader = dynamic_cast<OneRecReaderWrapper*>(state);
-    double start_time1 = GetCurTime();
+    //double start_time1 = GetCurTime();
     reader->Read(ctx);
     //LOG(INFO)<<"OneRecReaderKernel time  "<<(GetCurTime() - start_time)/1e6;
     //LOG(INFO)<<"OneRecReaderKernel time1  "<<(GetCurTime() - start_time1)/1e6;

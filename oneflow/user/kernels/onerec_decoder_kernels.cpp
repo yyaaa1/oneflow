@@ -189,7 +189,7 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   char* out_ptr = out_blob->mut_dptr<char>();
   const int64_t out_bytes = out_blob->shape().elem_cnt() * sizeof(data_type);
   std::vector<const onerec::example::Tensor*> tensors;
-  double start_time = GetCurTime();
+  //double start_time = GetCurTime();
   GetTensorsFromRecords(records, record_num, key, &tensors);
   //LOG(INFO)<<"GetTensorsFromRecords time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
   std::vector<std::vector<int32_t>> tensor_dims;
@@ -249,7 +249,7 @@ void DecodeField(const TensorBuffer* records, const int64_t record_num, const st
   }
   const int64_t buffer_size = GetBatchSizeInBytes(batch_size, instance_shape, data_type);
   // CHECK_LE(buffer_size, out_bytes);
-  start_time = GetCurTime();
+  //start_time = GetCurTime();
   if (has_batch_padding) {
     CopyTensorsToBuffer<true>(tensors, data_type, instance_shape, out_ptr);
   } else {
@@ -269,7 +269,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
 
  private:
   void Compute(user_op::KernelComputeContext* ctx) const override {
-    double start_time = GetCurTime();
+    //double start_time = GetCurTime();
     
     user_op::Tensor* in_blob = ctx->Tensor4ArgNameAndIndex("in", 0);
     user_op::Tensor* out_blob = ctx->Tensor4ArgNameAndIndex("out", 0);

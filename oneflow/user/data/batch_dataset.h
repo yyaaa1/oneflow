@@ -34,11 +34,13 @@ class BatchDataset final : public Dataset<LoadTarget> {
   LoadTargetPtrList Next() override {
     LoadTargetPtrList ret;
     ret.reserve(batch_size_);
+    //double start_time=GetCurTime();
     for (int32_t i = 0; i < batch_size_; ++i) {
       LoadTargetPtrList tmp = loader_->Next();
       CHECK_EQ(tmp.size(), 1);
       ret.push_back(std::move(tmp.at(0)));
     }
+    //LOG(INFO)<<"BatchDataset time  "<<(GetCurTime() - start_time)/1e6;
     return ret;
   }
 
