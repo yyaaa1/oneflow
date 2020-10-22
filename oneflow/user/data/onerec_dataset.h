@@ -99,12 +99,13 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     //  template_tensor_.reset(new TensorBuffer());
     //  ReadSample(*template_tensor_);
     //} 
-    //double start_time=GetCurTime();
+    double start_time=GetCurTime();
     LoadTargetPtrList ret;
     ret.resize(batch_size_);
     for (int32_t i = 0; i < batch_size_; ++i) {
       ret.at(i).reset(new TensorBuffer());
       ReadSample(*ret.at(i).get());
+      //ret.at(i)->CopyFrom(*template_tensor_);
     }
     //LOG(INFO)<<"BatchDataset time  "<<(GetCurTime() - start_time)/1e6;
     return ret;
