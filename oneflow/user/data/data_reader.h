@@ -42,17 +42,17 @@ class DataReader {
     double start_time1=GetCurTime();
     CHECK(load_thrd_.joinable()) << "You should call StartLoadThread before read data";
     double start_time=GetCurTime();
-    LOG(INFO)<<"FetchBatchData start time  ";
+    //LOG(INFO)<<"FetchBatchData start time  ";
     auto batch_data = FetchBatchData();
-    LOG(INFO)<<"FetchBatchData time  "<<(GetCurTime() - start_time)/1e6;
-    LOG(INFO)<<"FetchBatchData end time  ";
+    //LOG(INFO)<<"FetchBatchData time  "<<(GetCurTime() - start_time)/1e6;
+    //LOG(INFO)<<"FetchBatchData end time  ";
 
     start_time=GetCurTime();
-    LOG(INFO)<<"Parse start time  ";
+    //LOG(INFO)<<"Parse start time  ";
     parser_->Parse(batch_data, ctx);
-    LOG(INFO)<<"Parse end time  ";
+    //LOG(INFO)<<"Parse end time  ";
     
-    LOG(INFO)<<"Read time  "<<(GetCurTime() - start_time1)/1e6;
+    //LOG(INFO)<<"Read time  "<<(GetCurTime() - start_time1)/1e6;
   }
 
   void Close() {
@@ -86,11 +86,11 @@ class DataReader {
   }
 
   bool LoadBatch() {
-    LOG(INFO)<<"LoadBatch start time  ";
+    //LOG(INFO)<<"LoadBatch start time  ";
     std::shared_ptr<LoadTargetPtrList> batch_data =
         std::make_shared<LoadTargetPtrList>(std::move(loader_->Next()));
     auto return_val =  batch_buffer_.Send(batch_data) == BufferStatus::kBufferStatusSuccess;
-    LOG(INFO)<<"LoadBatch end time  ";
+    //LOG(INFO)<<"LoadBatch end time  ";
     return return_val;
   }
 

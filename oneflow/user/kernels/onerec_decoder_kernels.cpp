@@ -288,7 +288,7 @@ class OneRecDecoderKernel final : public user_op::OpKernel {
     const Shape& batch_padding = ctx->Attr<Shape>("batch_padding");
     DecodeField(records, record_num, key, data_type, static_shape, is_dynamic, has_reshape, reshape,
                 has_batch_padding, batch_padding, out_blob);
-    LOG(INFO)<<"OneRecDecoderKernel time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
+    //LOG(INFO)<<"OneRecDecoderKernel time  "<<key<<"  "<<(GetCurTime() - start_time)/1e6;
     //nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }

@@ -29,9 +29,9 @@ class OneRecReaderWrapper final : public user_op::OpKernelState {
   ~OneRecReaderWrapper() = default;
 
   void Read(user_op::KernelComputeContext* ctx) { 
-    LOG(INFO)<<"OneRecReaderWrapper start time ";
+    //LOG(INFO)<<"OneRecReaderWrapper start time ";
     reader_.Read(ctx); 
-    LOG(INFO)<<"OneRecReaderWrapper end time ";
+    //LOG(INFO)<<"OneRecReaderWrapper end time ";
     }
 
  private:
@@ -54,14 +54,14 @@ class OneRecReaderKernel final : public user_op::OpKernel {
  private:
   void Compute(user_op::KernelComputeContext* ctx, user_op::OpKernelState* state) const override {
     //nvtxRangePush("reader");
-    LOG(INFO)<<"OneRecReaderKernel start time ";
+    //LOG(INFO)<<"OneRecReaderKernel start time ";
     double start_time = GetCurTime();
     auto* reader = dynamic_cast<OneRecReaderWrapper*>(state);
     double start_time1 = GetCurTime();
     reader->Read(ctx);
-    LOG(INFO)<<"OneRecReaderKernel time  "<<(GetCurTime() - start_time)/1e6;
-    LOG(INFO)<<"OneRecReaderKernel time1  "<<(GetCurTime() - start_time1)/1e6;
-    LOG(INFO)<<"OneRecReaderKernel end time  ";
+    //LOG(INFO)<<"OneRecReaderKernel time  "<<(GetCurTime() - start_time)/1e6;
+    //LOG(INFO)<<"OneRecReaderKernel time1  "<<(GetCurTime() - start_time1)/1e6;
+    //LOG(INFO)<<"OneRecReaderKernel end time  ";
     //nvtxRangePop();
   }
   bool AlwaysComputeWhenAllOutputsEmpty() const override { return false; }

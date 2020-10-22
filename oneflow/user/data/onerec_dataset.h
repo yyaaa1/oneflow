@@ -91,13 +91,13 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
 
   LoadTargetPtrList Next() override {
     LoadTargetPtrList ret;
-    if (!template_tensor_) {
-      template_tensor_.reset(new TensorBuffer());
-      ReadSample(*template_tensor_);
-    } 
+    //if (!template_tensor_) {
+    //  template_tensor_.reset(new TensorBuffer());
+    //  ReadSample(*template_tensor_);
+    //} 
     LoadTargetPtr sample_ptr(new TensorBuffer());
-    // ReadSample(*sample_ptr);
-    sample_ptr->CopyFrom(*template_tensor_);
+    ReadSample(*sample_ptr);
+    //sample_ptr->CopyFrom(*template_tensor_);
     ret.push_back(std::move(sample_ptr));
     return ret;
   }
@@ -140,7 +140,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     //CHECK_NE(LZ4_XXH64_update(state, body, payload_size), XXH_ERROR);
     //CHECK_EQ(ByteSwap(footer_view.digest), LZ4_XXH64_digest(state));
     CHECK_NE(LZ4_XXH64_freeState(state), XXH_ERROR);
-    LOG(INFO)<<"ReadSample time  "<<(GetCurTime() - start_time)/1e6;
+    //LOG(INFO)<<"ReadSample time  "<<(GetCurTime() - start_time)/1e6;
   }
 
   void ResetInstream() {
@@ -151,7 +151,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     }
     std::vector<std::string> file_paths = GetLocalFilePaths();
     in_stream_.reset(new PersistentInStream(DataFS(), file_paths, false, false));
-    LOG(INFO)<<"ResetInstream time  "<<(GetCurTime() - start_time)/1e6;
+    //LOG(INFO)<<"ResetInstream time  "<<(GetCurTime() - start_time)/1e6;
   }
 
   std::vector<std::string> GetLocalFilePaths() {
