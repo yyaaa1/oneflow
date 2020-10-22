@@ -104,7 +104,6 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
 
  private:
   void ReadSample(TensorBuffer& tensor) {
-    double start_time = GetCurTime();
     static_assert(sizeof(OneRecFrameHeader) == kHeaderSize, "");
     OneRecFrameHeaderView header_view{};
     static_assert(sizeof(header_view.header) == kHeaderSize, "");
@@ -140,7 +139,6 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     //CHECK_NE(LZ4_XXH64_update(state, body, payload_size), XXH_ERROR);
     //CHECK_EQ(ByteSwap(footer_view.digest), LZ4_XXH64_digest(state));
     CHECK_NE(LZ4_XXH64_freeState(state), XXH_ERROR);
-    //LOG(INFO)<<"ReadSample time  "<<(GetCurTime() - start_time)/1e6;
   }
 
   void ResetInstream() {
