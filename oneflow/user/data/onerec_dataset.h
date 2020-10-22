@@ -87,6 +87,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     ResetInstream();
     hash_state_ = LZ4_XXH64_createState();
     CHECK_NOTNULL(hash_state_);
+    batch_size_ = ctx->TensorDesc4ArgNameAndIndex("out", 0)->shape().elem_cnt();
   }
 
   ~OneRecDataset() {
@@ -94,15 +95,18 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
   }
 
   LoadTargetPtrList Next() override {
-    LoadTargetPtrList ret;
     //if (!template_tensor_) {
     //  template_tensor_.reset(new TensorBuffer());
     //  ReadSample(*template_tensor_);
     //} 
-    LoadTargetPtr sample_ptr(new TensorBuffer());
-    ReadSample(*sample_ptr);
-    //sample_ptr->CopyFrom(*template_tensor_);
-    ret.push_back(std::move(sample_ptr));
+    //double start_time=GetCurTime();
+    LoadTargetPtrList ret;
+    ret.resize(batch_size_);
+    for (int32_t i = 0; i < batch_size_; ++i) {
+      ret.at(i).reset(new TensorBuffer());
+      ReadSample(*ret.at(i).get());
+    }
+    //LOG(INFO)<<"BatchDataset time  "<<(GetCurTime() - start_time)/1e6;
     return ret;
   }
 
@@ -174,6 +178,7 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
 
   std::unique_ptr<TensorBuffer> template_tensor_;
   XXH64_state_t* hash_state_;
+  int32_t batch_size_;
 
 };
 
