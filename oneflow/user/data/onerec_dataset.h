@@ -85,9 +85,13 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     BalancedSplitter bs(data_file_paths_.size(), parallel_num_);
     range_ = bs.At(parallel_id_);
     ResetInstream();
+    hash_state_ = LZ4_XXH64_createState();
+    CHECK_NOTNULL(hash_state_);
   }
 
-  ~OneRecDataset() = default;
+  ~OneRecDataset() {
+    CHECK_NE(LZ4_XXH64_freeState(hash_state_), XXH_ERROR);
+  }
 
   LoadTargetPtrList Next() override {
     LoadTargetPtrList ret;
@@ -120,12 +124,12 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     const int32_t payload_size = header_view.header.payload_size;
     CHECK_GE(payload_size, 0);
     CHECK_LE(payload_size, kMaxPayloadSize);
-    XXH64_state_t* const state = LZ4_XXH64_createState();
-    CHECK_NOTNULL(state);
+    //XXH64_state_t* const state = LZ4_XXH64_createState();
+    //CHECK_NOTNULL(hash_state_);
     XXH64_hash_t const seed = 0;
-    CHECK_NE(LZ4_XXH64_reset(state, seed), XXH_ERROR);
-    CHECK_NE(XXH64_update(state, header_view.raw, kHeaderSizeWithoutDigest), XXH_ERROR);
-    CHECK_EQ(ByteSwap(header_view.header.digest), LZ4_XXH64_digest(state));
+    CHECK_NE(LZ4_XXH64_reset(hash_state_, seed), XXH_ERROR);
+    CHECK_NE(XXH64_update(hash_state_, header_view.raw, kHeaderSizeWithoutDigest), XXH_ERROR);
+    CHECK_EQ(ByteSwap(header_view.header.digest), LZ4_XXH64_digest(hash_state_));
     const int32_t padded_size = RoundUp(payload_size, kPayloadAlignmentSize) - payload_size;
     tensor.Resize(Shape({payload_size}), DataType::kChar);
     char* body = tensor.mut_data<char>();
@@ -138,11 +142,12 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
     //CHECK_NE(XXH64_reset(state, seed), XXH_ERROR);
     //CHECK_NE(LZ4_XXH64_update(state, body, payload_size), XXH_ERROR);
     //CHECK_EQ(ByteSwap(footer_view.digest), LZ4_XXH64_digest(state));
-    CHECK_NE(LZ4_XXH64_freeState(state), XXH_ERROR);
+    
+    //CHECK_NE(LZ4_XXH64_freeState(state), XXH_ERROR);
   }
 
   void ResetInstream() {
-    double start_time = GetCurTime();
+    //double start_time = GetCurTime();
     if (shuffle_after_epoch_) {
       std::mt19937 g(kOneflowDatasetSeed + current_epoch_);
       std::shuffle(data_file_paths_.begin(), data_file_paths_.end(), g);
@@ -168,6 +173,8 @@ class OneRecDataset final : public Dataset<TensorBuffer> {
   std::unique_ptr<PersistentInStream> in_stream_;
 
   std::unique_ptr<TensorBuffer> template_tensor_;
+  XXH64_state_t* hash_state_;
+
 };
 
 }  // namespace data
