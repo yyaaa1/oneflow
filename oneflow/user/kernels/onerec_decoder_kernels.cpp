@@ -18,9 +18,9 @@ limitations under the License.
 #include "oneflow/core/common/tensor_buffer.h"
 #include "oneflow/user/kernels/example_generated.h"
 #include "oneflow/core/thread/thread_manager.h"
-#include <nvToolsExt.h> 
-#include <sys/syscall.h>
-#include <unistd.h>
+//#include <nvToolsExt.h> 
+//#include <sys/syscall.h>
+//#include <unistd.h>
 namespace oneflow {
 
 namespace {

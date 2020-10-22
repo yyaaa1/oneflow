@@ -15,9 +15,9 @@ limitations under the License.
 */
 #include "oneflow/core/framework/framework.h"
 #include "oneflow/user/data/onerec_data_reader.h"
-#include <nvToolsExt.h> 
-#include <sys/syscall.h>
-#include <unistd.h>
+//#include <nvToolsExt.h> 
+//#include <sys/syscall.h>
+//#include <unistd.h>
 
 namespace oneflow {
 
